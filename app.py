@@ -23,7 +23,9 @@ def create_room():
     rooms[code] = {
         "host": "socket_id_placeholder",
         "players": [],
-        "started": False
+        "started": False,
+        "turn_index": 0,
+        "phase": "waiting"
     }
     return jsonify({"code": code})
 
@@ -32,6 +34,12 @@ def room(code):
     if code not in rooms:
         return "Room not found", 404
     return render_template("room.html", code=code)
+
+@app.route("/game/<code>")
+def game(code):
+    if code not in rooms:
+        return "Game not found", 404
+    return render_template("game.html", code=code)
 
 # ---------- SOCKET EVENTS ----------
 
@@ -45,55 +53,72 @@ def handle_join(data):
         return
 
     join_room(code)
-    
-    if len(rooms[code]["players"]) == 0:
+
+    # Assign host if first player
+    if not rooms[code]["players"]:
         rooms[code]["host"] = request.sid
-    
+
     rooms[code]["players"].append({
         "name": name,
         "sid": request.sid
     })
 
-    emit("room_update", {
-        "players": [p["name"] for p in rooms[code]["players"]],
-        "is_host": request.sid == rooms[code]["host"],
-        "started": rooms[code].get("started", False)
-    }, room=request.sid)
+    # Send personal info to this client
+    emit("joined", {
+        "sid": request.sid,
+        "is_host": request.sid == rooms[code]["host"]
+    })
 
-    emit("player_list", 
+    # Broadcast player list
+    emit("player_list",
          [p["name"] for p in rooms[code]["players"]],
          room=code)
+
 
 @socketio.on("start_game")
 def start_game(data):
     code = data["code"]
+    room = rooms.get(code)
 
-    if code not in rooms:
+    if not room:
         return
 
-    # SECURITY CHECK
-    if request.sid != rooms[code]["host"]:
-        emit("error", "Only the host can start the game")
+    # 🚨 SERVER AUTHORITY CHECK
+    if request.sid != room["host"]:
+        emit("error", "Only host can start")
         return
 
-    rooms[code]["started"] = True
-    emit("game_started", room=code)
+    room["phase"] = "playing"
+    room["turn_index"] = 0
+
+    first_player = room["players"][0]
+
+    emit("game_started", {
+        "current_turn_sid": first_player["sid"],
+        "current_player": first_player["name"]
+    }, room=code)
+
+
+
 
 @socketio.on("disconnect")
 def handle_disconnect():
     for code, room in rooms.items():
-        for p in room["players"]:
+        for i, p in enumerate(room["players"]):
             if p["sid"] == request.sid:
                 room["players"].remove(p)
 
-                # Transfer host
-                if room["host"] == request.sid and room["players"]:
-                    room["host"] = room["players"][0]["sid"]
+                # Fix turn index
+                if i <= room["turn_index"]:
+                    room["turn_index"] = max(0, room["turn_index"] - 1)
 
-                emit("player_list",
-                     [x["name"] for x in room["players"]],
-                     room=code)
+                if room["players"]:
+                    emit("turn_update", {
+                        "current_player":
+                        room["players"][room["turn_index"]]["name"]
+                    }, room=code)
                 return
+
 
 
 @socketio.on("leave_room")
@@ -105,6 +130,32 @@ def handle_leave(data):
         rooms[code]["players"].remove(name)
         leave_room(code)
         emit("room_update", rooms[code]["players"], room=code)
+        
+@socketio.on("take_turn")
+def take_turn(data):
+    code = data["code"]
+    room = rooms.get(code)
+
+    if not room or room["phase"] != "playing":
+        return
+
+    current = room["players"][room["turn_index"]]
+
+    # 🚨 HARD AUTHORITY CHECK
+    if request.sid != current["sid"]:
+        emit("error", "Not your turn")
+        return
+
+    # Advance turn
+    room["turn_index"] = (room["turn_index"] + 1) % len(room["players"])
+    next_player = room["players"][room["turn_index"]]
+
+    emit("turn_update", {
+        "current_turn_sid": next_player["sid"],
+        "current_player": next_player["name"]
+    }, room=code)
+
+
 
 
 if __name__ == "__main__":

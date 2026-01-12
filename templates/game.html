@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Room {{ code }}</title>
+
+
+  <!-- Socket.IO client -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    #startBtn {
+      margin: 10px 0;
+    }
+    #actionBtn:disabled {
+      opacity: 0.5;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Game Code: {{ code }}</h1>
+
+  <script>
+    const socket = io();
+    const code = "{{ code }}";
+
+    let mySid = null;
+    let myName = "";
+    let isHost = false;
+    let isMyTurn = false;
+
+    //ran when page first loads
+    socket.on("joined", (data) => {
+      mySid = data.sid;
+      isHost = data.is_host;
+
+      document.getElementById("joinSection").style.display = "none";
+      document.getElementById("lobbySection").style.display = "block";
+      if (isHost){
+        isMyTurn = true;
+      }
+    });
+
+    // ---- PLAYER LIST ----
+    socket.on("player_list", (players) => {
+      const list = document.getElementById("players");
+      list.innerHTML = "";
+
+      players.forEach(name => {
+        const li = document.createElement("li");
+        li.textContent = name;
+        list.appendChild(li);
+      });
+    });
+
+    socket.on("game_started", (data) => {
+      document.getElementById("lobbySection").style.display = "none";
+      document.getElementById("gameSection").style.display = "block";
+      updateTurn(data.current_turn_sid, data.current_player);
+    });
+
+    // ---- TURN UPDATES ----
+    socket.on("turn_update", (data) => {
+      updateTurn(data.current_turn_sid, data.current_player);
+    });
+
+    function updateTurn(turnSid, playerName) {
+      document.getElementById("turnLabel").textContent =
+        `Current Turn: ${playerName}`;
+
+      isMyTurn = (turnSid === mySid);
+      document.getElementById("actionBtn").disabled = !isMyTurn;
+    }
+
+    // ---- TAKE TURN ----
+    function takeTurn() {
+      if (!isMyTurn) return;
+      socket.emit("take_turn", { code, action: "placeholder" });
+    }
+
+    // ---- ERRORS ----
+    socket.on("error", (msg) => {
+      alert(msg);
+    });
+  </script>
+</body>
+</html>
