@@ -1,21 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Web Page</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="script.js" defer></script>
+  <title>Lobby</title>
 </head>
 <body>
-    <header>
-        <h1>Welcome to My Web Page</h1>
-    </header>
-    <main>
-        <p>This is a sample web page created to demonstrate HTML structure.</p>
-    </main>
-    <footer>
-        <p>&copy; 2024 My Web Page</p>
-    </footer>
+  <button onclick="createRoom()">Create Room</button>
+
+  <h3>Join Room</h3>
+  <input id="code" placeholder="Room Code">
+  <button onclick="joinRoom()">Join</button>
+
+  <script>
+    async function createRoom() {
+      const res = await fetch("/create-room", { method: "POST" });
+      const data = await res.json();
+      window.location.href = `/room/${data.code}`;
+    }
+
+    function joinRoom() {
+      const code = document.getElementById("code").value;
+      window.location.href = `/room/${code}`;
+    }
+  </script>
 </body>
 </html>

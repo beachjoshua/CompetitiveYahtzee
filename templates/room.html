@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Room {{ code }}</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>Room Code: {{ code }}</h1>
+
+  <input id="name" placeholder="Your Name">
+  <button id="join" onclick="join()">Join Room</button>
+
+  <h3>Players</h3>
+  <ul id="players"></ul>
+
+  <script>
+    const socket = io();
+    const code = "{{ code }}";
+
+    function join() {
+      const name = document.getElementById("name").value;
+      document.getElementById("name").disabled = true;
+      document.getElementById("join").disabled = true;
+      socket.emit("join_room", { code, name });
+    }
+
+    socket.on("room_update", (players) => {
+      const list = document.getElementById("players");
+      list.innerHTML = "";
+      players.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = p;
+        list.appendChild(li);
+      });
+    });
+
+    socket.on("error", (msg) => {
+      alert(msg);
+    });
+  </script>
+</body>
+</html>
