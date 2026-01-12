@@ -13,30 +13,52 @@
   <h3>Players</h3>
   <ul id="players"></ul>
 
+  <button id="startBtn" onclick="startGame()" style="display:none;">
+  Start Game
+  </button>
+
+
   <script>
     const socket = io();
     const code = "{{ code }}";
+    let isHost = false;
 
     function join() {
       const name = document.getElementById("name").value;
-      document.getElementById("name").disabled = true;
-      document.getElementById("join").disabled = true;
-      socket.emit("join_room", { code, name });
+      if(name!="")
+      {
+        document.getElementById("name").disabled = true;
+        document.getElementById("join").disabled = true;
+        socket.emit("join_room", { code, name });
+      }
     }
+    socket.on("room_update", (data) => {
+    isHost = data.is_host;
 
-    socket.on("room_update", (players) => {
-      const list = document.getElementById("players");
-      list.innerHTML = "";
-      players.forEach(p => {
-        const li = document.createElement("li");
-        li.textContent = p;
-        list.appendChild(li);
-      });
-    });
+    if (isHost && !data.started) {
+      document.getElementById("startBtn").style.display = "block";
+    }
+  });
 
-    socket.on("error", (msg) => {
-      alert(msg);
+  socket.on("player_list", (players) => {
+    const list = document.getElementById("players");
+    list.innerHTML = "";
+    players.forEach(p => {
+      const li = document.createElement("li");
+      li.textContent = p;
+      list.appendChild(li);
     });
+  });
+
+  function startGame() {
+    socket.emit("start_game", { code });
+  }
+
+  socket.on("game_started", () => {
+    alert("Game Started!");
+    // Redirect to game page or initialize game state here
+    // window.location.href = `/game/${code}`;
+  });
   </script>
 </body>
 </html>
