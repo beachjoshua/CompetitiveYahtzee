@@ -20,8 +20,9 @@
   </style>
 </head>
 
-<body>
-  <h1>Game Code: {{ code }}</h1>
+<body onload="start()">
+  <h1>Game Room: {{ code }}</h1>
+  <button id="rollBtn" onclick="rollDice()" style="display:block;">Roll Dice</button>
 
   <script>
     const socket = io();
@@ -33,7 +34,7 @@
     let isMyTurn = false;
 
     //ran when page first loads
-    socket.on("joined", (data) => {
+    socket.on("joined_game", (data) => {
       mySid = data.sid;
       isHost = data.is_host;
 
@@ -79,6 +80,17 @@
     function takeTurn() {
       if (!isMyTurn) return;
       socket.emit("take_turn", { code, action: "placeholder" });
+    }
+
+    function rollDice() {
+      if (!isMyTurn) return;
+      socket.emit("roll_dice", { code });
+    }
+
+    function start() {
+      //emits to server, then server emits back "joined" event
+      socket.emit("join_game", {code});
+      
     }
 
     // ---- ERRORS ----

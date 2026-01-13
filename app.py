@@ -21,11 +21,15 @@ def index():
 def create_room():
     code = generate_code()
     rooms[code] = {
-        "host": "socket_id_placeholder",
+        "host": "",
         "players": [],
         "started": False,
         "turn_index": 0,
-        "phase": "waiting"
+        "phase": "waiting",
+        "dice": [1,1,1,1,1],
+        "scorecards": [
+            #{"0s":<value>...}... # one for each player
+        ]
     }
     return jsonify({"code": code})
 
@@ -39,7 +43,14 @@ def room(code):
 def game(code):
     if code not in rooms:
         return "Game not found", 404
-    return render_template("game.html", code=code)
+    room_data = rooms[code]  # server dictionary
+    # Only sending "safe" info
+    safe_data = {
+        "players": [{"name": p["name"]} for p in room_data["players"]],
+        "phase": room_data["phase"],
+        "turn_index": room_data["turn_index"]
+    }
+    return render_template("game.html", code=code, room=safe_data)
 
 # ---------- SOCKET EVENTS ----------
 
@@ -78,12 +89,13 @@ def handle_join(data):
 @socketio.on("start_game")
 def start_game(data):
     code = data["code"]
+    #name = data["name"]
     room = rooms.get(code)
 
     if not room:
         return
 
-    # 🚨 SERVER AUTHORITY CHECK
+    #safety check
     if request.sid != room["host"]:
         emit("error", "Only host can start")
         return
@@ -93,13 +105,10 @@ def start_game(data):
 
     first_player = room["players"][0]
 
-    emit("game_started", {
+    emit("game_page_redirect", {
         "current_turn_sid": first_player["sid"],
         "current_player": first_player["name"]
     }, room=code)
-
-
-
 
 @socketio.on("disconnect")
 def handle_disconnect():
@@ -119,8 +128,6 @@ def handle_disconnect():
                     }, room=code)
                 return
 
-
-
 @socketio.on("leave_room")
 def handle_leave(data):
     code = data["code"]
@@ -130,6 +137,28 @@ def handle_leave(data):
         rooms[code]["players"].remove(name)
         leave_room(code)
         emit("room_update", rooms[code]["players"], room=code)
+        
+@socketio.on("join_game")
+def handle_join(data):
+    code = data["code"]
+    name = data["name"]
+
+    if code not in rooms:
+        emit("error", "Room does not exist")
+        return
+
+    #join_room(code)
+
+    # Send personal info to this client
+    emit("joined_game", {
+        "sid": request.sid,
+        "is_host": request.sid == rooms[code]["host"]
+    })
+
+    # Broadcast player list
+    emit("player_list",
+         [p["name"] for p in rooms[code]["players"]],
+         room=code) 
         
 @socketio.on("take_turn")
 def take_turn(data):
@@ -141,7 +170,7 @@ def take_turn(data):
 
     current = room["players"][room["turn_index"]]
 
-    # 🚨 HARD AUTHORITY CHECK
+    #AUTHORITY CHECK
     if request.sid != current["sid"]:
         emit("error", "Not your turn")
         return
@@ -155,8 +184,21 @@ def take_turn(data):
         "current_player": next_player["name"]
     }, room=code)
 
+@socketio.on("roll_dice")
+def roll_dice(data):
+    code = data["code"]
+    room = rooms.get(code)
 
+    if not room:
+        return
 
+    # Roll 5 dice
+    room["dice"] = [random.randint(1, 6) for _ in range(5)]
+
+    emit("dice_rolled", {
+        "dice": room["dice"]
+    }, room=code)
+    print(f"Dice rolled in room {code}: {room['dice']}")
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)

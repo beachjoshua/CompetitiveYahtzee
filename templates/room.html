@@ -26,6 +26,7 @@
     let mySid = null;
     let isHost = false;
 
+
     function join() {
       const name = document.getElementById("name").value.trim();
       if(!name) return;
@@ -68,7 +69,7 @@
     }
 
     // Redirect all players to /game/<code> when server signals
-    socket.on("game_started", () => {
+    socket.on("game_page_redirect", () => {
       // Redirect to the Flask route /game/<code>
       window.location.href = `/game/${code}`;
     });
