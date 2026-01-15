@@ -126,9 +126,21 @@ def create_scorecards(data):
             "Yahtzee": None,
             "Chance": None
         }
+        
+    room["scorecards"] = scorecards
 
     emit("scorecards_created", scorecards, room=code)
 
+@socketio.on("start_playing")
+def start_playing(data):
+    code = data["code"]
+    room = rooms.get(code)
+    scorecards = room.get("scorecards")
+
+    room["current_turn"] = room["players"][0]["id"]
+    nameForCurrentTurn = room["players"][0]["name"]
+
+    emit("startedYahtzeeGame", {"current_turn": room["current_turn"], "nameForCurrentTurn": nameForCurrentTurn}, room=code)
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)

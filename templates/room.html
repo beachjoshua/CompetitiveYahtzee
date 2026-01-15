@@ -21,7 +21,13 @@
   </div>
 
   <div id="gameSection" style="display:none;">
-    <!-- Game content will go here -->
+    <div id="currentTurnInfo"> </div>
+    <div id="scorecardsSection"> </div>
+    <div id="dice">
+      <h3>Dice</h3>
+      <div id="diceValues"> </div>
+      <button id="rollDiceBtn">Roll Dice</button>
+    </div>
   </div>
 
   <script>
@@ -47,6 +53,10 @@
 
     function createScoreCards(){
       socket.emit("create_scorecards", { code });
+    }
+
+    function start_playing(scorecards){
+      socket.emit("start_playing", { code });
     }
 
     //////socket event handlers//////
@@ -81,10 +91,10 @@
     socket.on("scorecards_created", (scorecards) => {
       const div = document.getElementById("gameSection");
       div.style.display = "block";
-      div.innerHTML = "";
 
       Object.values(scorecards).forEach(card => {
-        const tableDiv = document.createElement("div");
+        const tableDiv = document.getElementById("scorecardsSection");
+        tableDiv.innerHTML = "";
         tableDiv.innerHTML = `<h3>Scorecard for ${card.Name}</h3>`;
 
         const table = document.createElement("table");
@@ -110,10 +120,18 @@
 
         tableDiv.appendChild(table);
         div.appendChild(tableDiv);
+        document.getElementById("rollDiceBtn").disabled = true;
+        start_playing();
       });
     });
 
-    
+    socket.on("startedYahtzeeGame", (data) => {
+      const div = document.getElementById("currentTurnInfo");
+      div.textContent = `Current Turn: ${data.nameForCurrentTurn}`;
+      if (localStorage.getItem("player_id") === data.current_turn) {
+        document.getElementById("rollDiceBtn").disabled = false;
+      }
+    });
 
     socket.on("error", alert);
   </script>
