@@ -7,29 +7,33 @@
 <body>
   <h1>Room Code: {{ code }}</h1>
 
-  <!-- Join Section -->
   <div id="joinSection">
     <input id="name" placeholder="Your Name">
     <button id="join" onclick="join()">Join Room</button>
   </div>
 
-  <!-- Lobby Section -->
   <div id="lobbySection" style="display:none;">
     <h3>Players</h3>
     <ul id="players"></ul>
-    <button id="startBtn" onclick="startGame()" style="display:none;">Start Game</button>
+    <button id="startBtn" onclick="startGame()" style="display:none;">
+      Start Game
+    </button>
+  </div>
+
+  <div id="gameSection" style="display:none;">
+    <!-- Game content will go here -->
   </div>
 
   <script>
     const socket = io();
     const code = "{{ code }}";
-    let mySid = null;
     let isHost = false;
 
+    //////functions//////
 
     function join() {
       const name = document.getElementById("name").value.trim();
-      if(!name) return;
+      if (!name) return;
 
       document.getElementById("name").disabled = true;
       document.getElementById("join").disabled = true;
@@ -37,47 +41,81 @@
       socket.emit("join_room", { code, name });
     }
 
-    // Handle personal join info (SID + host)
-    socket.on("joined", (data) => {
-      mySid = data.sid;
-      isHost = data.is_host;
-
-      // Hide join form, show lobby
-      document.getElementById("joinSection").style.display = "none";
-      document.getElementById("lobbySection").style.display = "block";
-
-      // Show Start button if host
-      if(isHost){
-        document.getElementById("startBtn").style.display = "inline-block";
-      }
-    });
-
-    // Update player list
-    socket.on("player_list", (players) => {
-      const list = document.getElementById("players");
-      list.innerHTML = "";
-      players.forEach(p => {
-        const li = document.createElement("li");
-        li.textContent = p;
-        list.appendChild(li);
-      });
-    });
-
-    // Start Game button (host only)
     function startGame() {
       socket.emit("start_game", { code });
     }
 
-    // Redirect all players to /game/<code> when server signals
-    socket.on("game_page_redirect", () => {
-      // Redirect to the Flask route /game/<code>
-      window.location.href = `/game/${code}`;
+    function createScoreCards(){
+      socket.emit("create_scorecards", { code });
+    }
+
+    //////socket event handlers//////
+
+    socket.on("joined", (data) => {
+      localStorage.setItem("player_id", data.player_id);
+      isHost = data.is_host;
+
+      document.getElementById("joinSection").style.display = "none";
+      document.getElementById("lobbySection").style.display = "block";
+
+      if (isHost) {
+        document.getElementById("startBtn").style.display = "inline-block";
+      }
     });
 
-    // Error handling
-    socket.on("error", (msg) => {
-      alert(msg);
+    socket.on("player_list", (players) => {
+      const list = document.getElementById("players");
+      list.innerHTML = "";
+      players.forEach(name => {
+        const li = document.createElement("li");
+        li.textContent = name;
+        list.appendChild(li);
+      });
     });
+
+    socket.on("game_started", () => {
+      document.getElementById("lobbySection").innerHTML = "";
+      createScoreCards();
+    });
+
+    socket.on("scorecards_created", (scorecards) => {
+      const div = document.getElementById("gameSection");
+      div.style.display = "block";
+      div.innerHTML = "";
+
+      Object.values(scorecards).forEach(card => {
+        const tableDiv = document.createElement("div");
+        tableDiv.innerHTML = `<h3>Scorecard for ${card.Name}</h3>`;
+
+        const table = document.createElement("table");
+        table.innerHTML = `
+          <tr>
+            <th>Category</th>
+            <th>Score</th>
+          </tr>
+          <tr><td>Ones</td><td>${card.Ones}</td></tr>
+          <tr><td>Twos</td><td>${card.Twos}</td></tr>
+          <tr><td>Threes</td><td>${card.Threes}</td></tr>
+          <tr><td>Fours</td><td>${card.Fours}</td></tr>
+          <tr><td>Fives</td><td>${card.Fives}</td></tr>
+          <tr><td>Sixes</td><td>${card.Sixes}</td></tr>
+          <tr><td>Three of a Kind</td><td>${card.ToK}</td></tr>
+          <tr><td>Four of a Kind</td><td>${card.FoK}</td></tr>
+          <tr><td>Full House</td><td>${card.FH}</td></tr>
+          <tr><td>Small Straight</td><td>${card.SmS}</td></tr>
+          <tr><td>Large Straight</td><td>${card.LaS}</td></tr>
+          <tr><td>Yahtzee</td><td>${card.Yahtzee}</td></tr>
+          <tr><td>Chance</td><td>${card.Chance}</td></tr>
+        `;
+
+        tableDiv.appendChild(table);
+        div.appendChild(tableDiv);
+      });
+    });
+
+    
+
+    socket.on("error", alert);
   </script>
 </body>
 </html>
