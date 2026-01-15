@@ -122,7 +122,7 @@ def create_scorecards(data):
             "FoK": None,
             "FH": None,
             "SmS": None,
-            "LaS": None,
+            "LgS": None,
             "Yahtzee": None,
             "Chance": None
         }
