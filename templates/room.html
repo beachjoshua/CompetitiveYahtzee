@@ -3,6 +3,7 @@
 <head>
   <title>Room {{ code }}</title>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
   <h1>Room Code: {{ code }}</h1>
@@ -26,7 +27,7 @@
     <div id="dice">
       <h3>Dice</h3>
       <div id="diceValues"> </div>
-      <button id="rollDiceBtn">Roll Dice</button>
+      <button id="rollDiceBtn" onclick="rollDice()">Roll Dice</button>
     </div>
   </div>
 
@@ -57,6 +58,10 @@
 
     function start_playing(scorecards){
       socket.emit("start_playing", { code });
+    }
+
+    function rollDice(){
+      socket.emit("roll_dice", { code });
     }
 
     //////socket event handlers//////
@@ -92,38 +97,40 @@
       const div = document.getElementById("gameSection");
       div.style.display = "block";
 
-      Object.values(scorecards).forEach(card => {
-        const tableDiv = document.getElementById("scorecardsSection");
-        tableDiv.innerHTML = "";
-        tableDiv.innerHTML = `<h3>Scorecard for ${card.Name}</h3>`;
+      const tableDiv = document.getElementById("scorecardsSection");
+      tableDiv.innerHTML = ""; // clear ONCE
 
-        const table = document.createElement("table");
-        table.innerHTML = `
-          <tr>
-            <th>Category</th>
-            <th>Score</th>
-          </tr>
-          <tr><td>Aces</td><td>${card.Ones}</td></tr>
-          <tr><td>Twos</td><td>${card.Twos}</td></tr>
-          <tr><td>Threes</td><td>${card.Threes}</td></tr>
-          <tr><td>Fours</td><td>${card.Fours}</td></tr>
-          <tr><td>Fives</td><td>${card.Fives}</td></tr>
-          <tr><td>Sixes</td><td>${card.Sixes}</td></tr>
-          <tr><td>3 of a Kind</td><td>${card.ToK}</td></tr>
-          <tr><td>4 of a Kind</td><td>${card.FoK}</td></tr>
-          <tr><td>Full House</td><td>${card.FH}</td></tr>
-          <tr><td>Sm Straight</td><td>${card.SmS}</td></tr>
-          <tr><td>Lg Straight</td><td>${card.LgS}</td></tr>
-          <tr><td>YAHTZEE</td><td>${card.Yahtzee}</td></tr>
-          <tr><td>Chance</td><td>${card.Chance}</td></tr>
+      Object.values(scorecards).forEach(card => {
+        const cardContainer = document.createElement("div");
+        cardContainer.className = "scorecard";
+
+        cardContainer.innerHTML = `
+          <h3>Scorecard for ${card.Name}</h3>
+          <table>
+            <tr><th>Category</th><th>Score</th></tr>
+            <tr><td>Aces</td><td>${card.Ones}</td></tr>
+            <tr><td>Twos</td><td>${card.Twos}</td></tr>
+            <tr><td>Threes</td><td>${card.Threes}</td></tr>
+            <tr><td>Fours</td><td>${card.Fours}</td></tr>
+            <tr><td>Fives</td><td>${card.Fives}</td></tr>
+            <tr><td>Sixes</td><td>${card.Sixes}</td></tr>
+            <tr><td>3 of a Kind</td><td>${card.ToK}</td></tr>
+            <tr><td>4 of a Kind</td><td>${card.FoK}</td></tr>
+            <tr><td>Full House</td><td>${card.FH}</td></tr>
+            <tr><td>Sm Straight</td><td>${card.SmS}</td></tr>
+            <tr><td>Lg Straight</td><td>${card.LgS}</td></tr>
+            <tr><td>YAHTZEE</td><td>${card.Yahtzee}</td></tr>
+            <tr><td>Chance</td><td>${card.Chance}</td></tr>
+          </table>
         `;
 
-        tableDiv.appendChild(table);
-        div.appendChild(tableDiv);
-        document.getElementById("rollDiceBtn").disabled = true;
-        start_playing();
+        tableDiv.appendChild(cardContainer);
       });
+
+      document.getElementById("rollDiceBtn").disabled = true;
+      start_playing();
     });
+
 
     socket.on("startedYahtzeeGame", (data) => {
       const div = document.getElementById("currentTurnInfo");

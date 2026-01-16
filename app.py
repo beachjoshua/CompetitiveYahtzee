@@ -108,39 +108,63 @@ def create_scorecards(data):
         return
 
     scorecards = {}
+
     for player in room["players"]:
         scorecards[player["id"]] = {
             "Player_id": player["id"],
             "Name": player["name"],
-            "Ones": None,
-            "Twos": None,
-            "Threes": None,
-            "Fours": None,
-            "Fives": None,
-            "Sixes": None,
-            "ToK": None,
-            "FoK": None,
-            "FH": None,
-            "SmS": None,
-            "LgS": None,
-            "Yahtzee": None,
-            "Chance": None
+            "Ones": "__",
+            "Twos": "__",
+            "Threes": "__",
+            "Fours": "__",
+            "Fives": "__",
+            "Sixes": "__",
+            "ToK": "__",
+            "FoK": "__",
+            "FH": "__",
+            "SmS": "__",
+            "LgS": "__",
+            "Yahtzee": "__",
+            "Chance": "__"
         }
-        
-    room["scorecards"] = scorecards
 
+    room["scorecards"] = scorecards
     emit("scorecards_created", scorecards, room=code)
+
 
 @socketio.on("start_playing")
 def start_playing(data):
     code = data["code"]
     room = rooms.get(code)
-    scorecards = room.get("scorecards")
 
+    room["current_turn_index"] = 0
     room["current_turn"] = room["players"][0]["id"]
     nameForCurrentTurn = room["players"][0]["name"]
 
-    emit("startedYahtzeeGame", {"current_turn": room["current_turn"], "nameForCurrentTurn": nameForCurrentTurn}, room=code)
+    emit("startedYahtzeeGame", {
+        "current_turn": room["current_turn"],
+        "nameForCurrentTurn": nameForCurrentTurn
+    }, room=code)
+
+    
+@socketio.on("end_turn")
+def end_turn(data):
+    code = data["code"]
+    room = rooms.get(code)
+
+    room["current_turn_index"] = (room["current_turn_index"] + 1) % len(room["players"])
+    next_player = room["players"][room["current_turn_index"]]
+
+    room["current_turn"] = next_player["id"]
+
+    emit("turn_ended", {
+        "current_turn": room["current_turn"],
+        "nameForCurrentTurn": next_player["name"]
+    }, room=code)
+
+    
+    
+
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)

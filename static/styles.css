@@ -1,0 +1,32 @@
+#scorecardsSection {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.scorecard {
+  border: 2px solid #333;
+  padding: 10px;
+  width: 220px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+}
+
+.scorecard h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.scorecard table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scorecard th,
+.scorecard td {
+  border: 1px solid #aaa;
+  padding: 4px;
+  text-align: center;
+}
