@@ -26,7 +26,13 @@
     <div id="scorecardsSection"> </div>
     <div id="dice">
       <h3>Dice</h3>
-      <div id="diceValues"> </div>
+      <div id="diceValues">
+        <button id ="dice1" class="diceButton" onclick="holdDice(id, 0)" style="border-style:none">-</button>
+        <button id ="dice2" class="diceButton" onclick="holdDice(id, 1)" style="border-style:none">-</button>
+        <button id ="dice3" class="diceButton" onclick="holdDice(id, 2)" style="border-style:none">-</button>
+        <button id ="dice4" class="diceButton" onclick="holdDice(id, 3)" style="border-style:none">-</button>
+        <button id ="dice5" class="diceButton" onclick="holdDice(id, 4)" style="border-style:none">-</button>
+      </div>
       <button id="rollDiceBtn" onclick="rollDice()">Roll Dice</button>
     </div>
   </div>
@@ -62,6 +68,19 @@
 
     function rollDice(){
       socket.emit("roll_dice", { code });
+    }
+
+    function holdDice(id, diceIndex){
+      var diceButton = document.getElementById(id);
+      if (diceButton.style.borderStyle != "inset")
+      {
+        diceButton.style.borderStyle = "inset";
+      }
+      else{
+        diceButton.style.borderStyle = "none";
+      }
+
+      socket.emit("hold_dice", { code, diceIndex });
     }
 
     //////socket event handlers//////
@@ -140,6 +159,24 @@
       }
     });
 
+    socket.on("dice_rolled", (data) => {
+      const diceDiv = document.getElementById("diceValues");
+      const diceButtons = [
+        document.getElementById("dice1"),
+        document.getElementById("dice2"),
+        document.getElementById("dice3"),
+        document.getElementById("dice4"),
+        document.getElementById("dice5")
+      ];
+      diceIndex = 0;
+
+      data.dice.forEach(value => {
+        diceButtons[diceIndex].textContent = value;
+        diceIndex += 1;
+      });
+
+
+    })
     socket.on("error", alert);
   </script>
 </body>

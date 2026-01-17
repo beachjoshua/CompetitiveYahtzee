@@ -140,6 +140,7 @@ def start_playing(data):
     room["current_turn_index"] = 0
     room["current_turn"] = room["players"][0]["id"]
     nameForCurrentTurn = room["players"][0]["name"]
+    room["rolls_left"] = 3
 
     emit("startedYahtzeeGame", {
         "current_turn": room["current_turn"],
@@ -162,8 +163,26 @@ def end_turn(data):
         "nameForCurrentTurn": next_player["name"]
     }, room=code)
 
+@socketio.on("roll_dice")
+def roll_dice(data):
+    code = data["code"]
+    room = rooms.get(code)
     
+    #if no rolls left, make them choose a score
+    if room["rolls_left"] <=0:
+        #notify frontend that there are no rolls left
+        emit("no_rolls_left", room=code)
+        #reset rolls for next player
+        room["rolls_left"] = 3
+        #return as to not allow more rolling
+        return
+    else: #otherwise decrement rolls left
+        room["rolls_left"] -= 1
     
+    #roll 5 dice and put in array
+    dice = [random.randint(1,6) for _ in range(5)]
+    
+    emit("dice_rolled", {"dice": dice}, room=code)
 
 
 if __name__ == "__main__":
