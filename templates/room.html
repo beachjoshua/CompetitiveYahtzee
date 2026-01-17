@@ -80,7 +80,7 @@
         diceButton.style.borderStyle = "none";
       }
 
-      socket.emit("hold_dice", { code, diceIndex });
+      socket.emit("hold_dice", { code, diceIndex, value: diceButton.textContent });
     }
 
     //////socket event handlers//////

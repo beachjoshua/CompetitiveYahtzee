@@ -141,6 +141,8 @@ def start_playing(data):
     room["current_turn"] = room["players"][0]["id"]
     nameForCurrentTurn = room["players"][0]["name"]
     room["rolls_left"] = 3
+    room["held_dice"] = [False, False, False, False, False]
+    room["dice_values"] = [-1, -1, -1, -1, -1]
 
     emit("startedYahtzeeGame", {
         "current_turn": room["current_turn"],
@@ -170,10 +172,15 @@ def roll_dice(data):
     
     #if no rolls left, make them choose a score
     if room["rolls_left"] <=0:
+        
+        #reset rolls, dice, and held dice for next player
+        room["rolls_left"] = 3
+        room["dice_values"] = [-1, -1, -1, -1, -1]
+        room["held_dice"] = [False, False, False, False, False]
+        
         #notify frontend that there are no rolls left
         emit("no_rolls_left", room=code)
-        #reset rolls for next player
-        room["rolls_left"] = 3
+        
         #return as to not allow more rolling
         return
     else: #otherwise decrement rolls left
@@ -182,7 +189,31 @@ def roll_dice(data):
     #roll 5 dice and put in array
     dice = [random.randint(1,6) for _ in range(5)]
     
+    for i in range(5):
+        if room["held_dice"][i]:
+            #set the held dice to the held value
+            dice[i] = room["dice_values"][i]
+        else:
+            #else update the dice to the new value
+            room["dice_values"][i] = dice[i]
+    
+    
     emit("dice_rolled", {"dice": dice}, room=code)
+    
+@socketio.on("hold_dice")
+def hold_dice(data):
+    code = data["code"]
+    diceIndex = data["diceIndex"]
+    diceValue = data["value"]
+    room = rooms.get(code)
+    
+    #toggles the held status so dont need two seperate events
+    room["held_dice"][diceIndex] = not room["held_dice"][diceIndex]
+    
+    if(room["held_dice"][diceIndex]):
+        room["dice_values"][diceIndex] = int(diceValue)
+    
+    #emit("dice_held", {"diceIndex": diceIndex}, room=code)
 
 
 if __name__ == "__main__":
