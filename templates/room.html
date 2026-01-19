@@ -72,6 +72,13 @@
 
     function holdDice(id, diceIndex){
       var diceButton = document.getElementById(id);
+      
+      //cant hold empty dice
+      if(diceButton.textContent == "-"){
+        return;
+      }
+
+      //toggles the border style to show if dice is held or not
       if (diceButton.style.borderStyle != "inset")
       {
         diceButton.style.borderStyle = "inset";
@@ -81,6 +88,10 @@
       }
 
       socket.emit("hold_dice", { code, diceIndex, value: diceButton.textContent });
+    }
+
+    function selectScore(category){
+      socket.emit("select_score", { code, category });
     }
 
     //////socket event handlers//////
@@ -122,6 +133,8 @@
       Object.values(scorecards).forEach(card => {
         const cardContainer = document.createElement("div");
         cardContainer.className = "scorecard";
+        cardContainer.id = `scorecard-${card.Player_id}`;
+        console.log(`scorecard-${card.Player_id}`);
 
         cardContainer.innerHTML = `
           <h3>Scorecard for ${card.Name}</h3>
@@ -150,6 +163,33 @@
       start_playing();
     });
 
+    socket.on("update_scorecards", (data) => {
+      const {scorecard, playerId, name} = data;
+      const existingCard = document.getElementById(`scorecard-${playerId}`);
+      //existingCard.innerHTML = ""; // clear existing content
+
+      existingCard.innerHTML = `
+        <h3>Scorecard for ${name}</h3>
+        <table>
+          <tr><th>Category</th><th>Score</th></tr>
+          <tr><td>Aces</td><td><button onclick="selectScore('Ones')">${scorecard.Ones}</button></td></tr>
+          <tr><td>Twos</td><td><button onclick="selectScore('Twos')">${scorecard.Twos}</button></td></tr>
+          <tr><td>Threes</td><td><button onclick="selectScore('Threes')">${scorecard.Threes}</button></td></tr>
+          <tr><td>Fours</td><td><button onclick="selectScore('Fours')">${scorecard.Fours}</button></td></tr>
+          <tr><td>Fives</td><td><button onclick="selectScore('Fives')">${scorecard.Fives}</button></td></tr>
+          <tr><td>Sixes</td><td><button onclick="selectScore('Sixes')">${scorecard.Sixes}</button></td></tr>
+          <tr><td>3 of a Kind</td><td><button onclick="selectScore('ToK')">${scorecard.ToK}</button></td></tr>
+          <tr><td>4 of a Kind</td><td><button onclick="selectScore('FoK')">${scorecard.FoK}</button></td></tr>
+          <tr><td>Full House</td><td><button onclick="selectScore('FH')">${scorecard.FH}</button></td></tr>
+          <tr><td>Sm Straight</td><td><button onclick="selectScore('SmS')">${scorecard.SmS}</button></td></tr>
+          <tr><td>Lg Straight</td><td><button onclick="selectScore('LgS')">${scorecard.LgS}</button></td></tr>
+          <tr><td>YAHTZEE</td><td><button onclick="selectScore('Yahtzee')">${scorecard.Yahtzee}</button></td></tr>
+          <tr><td>Chance</td><td><button onclick="selectScore('Chance')">${scorecard.Chance}</button></td></tr>
+        </table>
+      `;
+
+    });
+
 
     socket.on("startedYahtzeeGame", (data) => {
       const div = document.getElementById("currentTurnInfo");
@@ -175,8 +215,13 @@
         diceIndex += 1;
       });
 
-
+      
     })
+
+    socket.on("no_rolls_left", () => {
+      document.getElementById("rollDiceBtn").disabled = true;
+    });
+
     socket.on("error", alert);
   </script>
 </body>

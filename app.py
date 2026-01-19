@@ -13,6 +13,28 @@ rooms = {}
 def generate_code(length=6):
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
+def calculate_possible_scores(dice_values, room):
+    counts = {i: dice_values.count(i) for i in range(1, 7)}
+    total = sum(dice_values)
+
+    possible_scores = {
+        "Ones": counts[1] * 1,
+        "Twos": counts[2] * 2,
+        "Threes": counts[3] * 3,
+        "Fours": counts[4] * 4,
+        "Fives": counts[5] * 5,
+        "Sixes": counts[6] * 6,
+        "ToK": total if max(counts.values()) >= 3 else 0,
+        "FoK": total if max(counts.values()) >= 4 else 0,
+        "FH": 25 if sorted(counts.values())[-2:] == [2, 3] else 0,
+        "SmS": 30 if any(all(num in dice_values for num in seq) for seq in ([1,2,3,4], [2,3,4,5], [3,4,5,6])) else 0,
+        "LgS": 40 if any(all(num in dice_values for num in seq) for seq in ([1,2,3,4,5], [2,3,4,5,6])) else 0,
+        "Yahtzee": 50 if max(counts.values()) == 5 else 0,
+        "Chance": total
+    }
+
+    room["possible_scores"] = possible_scores
+
 
 # ---------- ROUTES ----------
 
@@ -143,6 +165,23 @@ def start_playing(data):
     room["rolls_left"] = 3
     room["held_dice"] = [False, False, False, False, False]
     room["dice_values"] = [-1, -1, -1, -1, -1]
+    
+    #will be used to store possible scores for the current dice
+    #and then will be compared to actual current player's scorecard, and then sent to frontend
+    room["possible_scores"] = {
+            "Ones": "__",
+            "Twos": "__",
+            "Threes": "__",
+            "Fours": "__",
+            "Fives": "__",
+            "Sixes": "__",
+            "ToK": "__",
+            "FoK": "__",
+            "FH": "__",
+            "SmS": "__",
+            "LgS": "__",
+            "Yahtzee": "__",
+            "Chance": "__"}
 
     emit("startedYahtzeeGame", {
         "current_turn": room["current_turn"],
@@ -196,9 +235,20 @@ def roll_dice(data):
         else:
             #else update the dice to the new value
             room["dice_values"][i] = dice[i]
+            
+    calculate_possible_scores(room["dice_values"], room)
     
+    scorecard_with_possible_scores = room["possible_scores"]
+    current_players_scorecard = room["scorecards"][room["current_turn"]]
+    for key in scorecard_with_possible_scores:
+        if current_players_scorecard[key] != "__":
+            scorecard_with_possible_scores[key] = current_players_scorecard[key]
     
+    print(scorecard_with_possible_scores)
+    print(room["current_turn"])
+    print(room["players"][room["current_turn_index"]]["name"])
     emit("dice_rolled", {"dice": dice}, room=code)
+    emit("update_scorecards", {"scorecard": scorecard_with_possible_scores, "playerId": room["current_turn"], "name": room["players"][room["current_turn_index"]]["name"]}, room=code)
     
 @socketio.on("hold_dice")
 def hold_dice(data):
