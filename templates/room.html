@@ -134,7 +134,6 @@
         const cardContainer = document.createElement("div");
         cardContainer.className = "scorecard";
         cardContainer.id = `scorecard-${card.Player_id}`;
-        console.log(`scorecard-${card.Player_id}`);
 
         cardContainer.innerHTML = `
           <h3>Scorecard for ${card.Name}</h3>
@@ -172,21 +171,28 @@
         <h3>Scorecard for ${name}</h3>
         <table>
           <tr><th>Category</th><th>Score</th></tr>
-          <tr><td>Aces</td><td><button onclick="selectScore('Ones')">${scorecard.Ones}</button></td></tr>
-          <tr><td>Twos</td><td><button onclick="selectScore('Twos')">${scorecard.Twos}</button></td></tr>
-          <tr><td>Threes</td><td><button onclick="selectScore('Threes')">${scorecard.Threes}</button></td></tr>
-          <tr><td>Fours</td><td><button onclick="selectScore('Fours')">${scorecard.Fours}</button></td></tr>
-          <tr><td>Fives</td><td><button onclick="selectScore('Fives')">${scorecard.Fives}</button></td></tr>
-          <tr><td>Sixes</td><td><button onclick="selectScore('Sixes')">${scorecard.Sixes}</button></td></tr>
-          <tr><td>3 of a Kind</td><td><button onclick="selectScore('ToK')">${scorecard.ToK}</button></td></tr>
-          <tr><td>4 of a Kind</td><td><button onclick="selectScore('FoK')">${scorecard.FoK}</button></td></tr>
-          <tr><td>Full House</td><td><button onclick="selectScore('FH')">${scorecard.FH}</button></td></tr>
-          <tr><td>Sm Straight</td><td><button onclick="selectScore('SmS')">${scorecard.SmS}</button></td></tr>
-          <tr><td>Lg Straight</td><td><button onclick="selectScore('LgS')">${scorecard.LgS}</button></td></tr>
-          <tr><td>YAHTZEE</td><td><button onclick="selectScore('Yahtzee')">${scorecard.Yahtzee}</button></td></tr>
-          <tr><td>Chance</td><td><button onclick="selectScore('Chance')">${scorecard.Chance}</button></td></tr>
+          <tr><td>Aces</td><td><button class="score-btn" onclick="selectScore('Ones')">${scorecard.Ones}</button></td></tr>
+          <tr><td>Twos</td><td><button class="score-btn" onclick="selectScore('Twos')">${scorecard.Twos}</button></td></tr>
+          <tr><td>Threes</td><td><button class="score-btn" onclick="selectScore('Threes')">${scorecard.Threes}</button></td></tr>
+          <tr><td>Fours</td><td><button class="score-btn" onclick="selectScore('Fours')">${scorecard.Fours}</button></td></tr>
+          <tr><td>Fives</td><td><button class="score-btn" onclick="selectScore('Fives')">${scorecard.Fives}</button></td></tr>
+          <tr><td>Sixes</td><td><button class="score-btn" onclick="selectScore('Sixes')">${scorecard.Sixes}</button></td></tr>
+          <tr><td>3 of a Kind</td><td><button class="score-btn" onclick="selectScore('ToK')">${scorecard.ToK}</button></td></tr>
+          <tr><td>4 of a Kind</td><td><button class="score-btn" onclick="selectScore('FoK')">${scorecard.FoK}</button></td></tr>
+          <tr><td>Full House</td><td><button class="score-btn" onclick="selectScore('FH')">${scorecard.FH}</button></td></tr>
+          <tr><td>Sm Straight</td><td><button class="score-btn" onclick="selectScore('SmS')">${scorecard.SmS}</button></td></tr>
+          <tr><td>Lg Straight</td><td><button class="score-btn" onclick="selectScore('LgS')">${scorecard.LgS}</button></td></tr>
+          <tr><td>YAHTZEE</td><td><button class="score-btn" onclick="selectScore('Yahtzee')">${scorecard.Yahtzee}</button></td></tr>
+          <tr><td>Chance</td><td><button class="score-btn" onclick="selectScore('Chance')">${scorecard.Chance}</button></td></tr>
         </table>
       `;
+
+      if (localStorage.getItem("player_id") !== playerId) {
+        const buttons = existingCard.querySelectorAll(".score-btn");
+        buttons.forEach(button => {
+          button.disabled = true;
+        });
+      }
 
     });
 
@@ -196,6 +202,13 @@
       div.textContent = `Current Turn: ${data.nameForCurrentTurn}`;
       if (localStorage.getItem("player_id") === data.current_turn) {
         document.getElementById("rollDiceBtn").disabled = false;
+      }else{
+        //disable dice holds for other players
+        const diceDiv = document.getElementById("diceValues");
+        const buttons = diceDiv.querySelectorAll(".diceButton");
+        buttons.forEach(button => {
+          button.disabled = true;
+        });
       }
     });
 
