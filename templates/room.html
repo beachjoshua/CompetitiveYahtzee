@@ -90,7 +90,11 @@
       socket.emit("hold_dice", { code, diceIndex, value: diceButton.textContent });
     }
 
-    function selectScore(category){
+    function selectScore(category, id){
+      const button = document.getElementById(id);
+      button.disabled = true;
+
+
       socket.emit("select_score", { code, category });
     }
 
@@ -163,34 +167,139 @@
     });
 
     socket.on("update_scorecards", (data) => {
-      const {scorecard, playerId, name} = data;
+      const {scorecard_faux, scorecard_real, playerId, name} = data;
       const existingCard = document.getElementById(`scorecard-${playerId}`);
-      //existingCard.innerHTML = ""; // clear existing content
 
-      existingCard.innerHTML = `
-        <h3>Scorecard for ${name}</h3>
-        <table>
-          <tr><th>Category</th><th>Score</th></tr>
-          <tr><td>Aces</td><td><button class="score-btn" onclick="selectScore('Ones')">${scorecard.Ones}</button></td></tr>
-          <tr><td>Twos</td><td><button class="score-btn" onclick="selectScore('Twos')">${scorecard.Twos}</button></td></tr>
-          <tr><td>Threes</td><td><button class="score-btn" onclick="selectScore('Threes')">${scorecard.Threes}</button></td></tr>
-          <tr><td>Fours</td><td><button class="score-btn" onclick="selectScore('Fours')">${scorecard.Fours}</button></td></tr>
-          <tr><td>Fives</td><td><button class="score-btn" onclick="selectScore('Fives')">${scorecard.Fives}</button></td></tr>
-          <tr><td>Sixes</td><td><button class="score-btn" onclick="selectScore('Sixes')">${scorecard.Sixes}</button></td></tr>
-          <tr><td>3 of a Kind</td><td><button class="score-btn" onclick="selectScore('ToK')">${scorecard.ToK}</button></td></tr>
-          <tr><td>4 of a Kind</td><td><button class="score-btn" onclick="selectScore('FoK')">${scorecard.FoK}</button></td></tr>
-          <tr><td>Full House</td><td><button class="score-btn" onclick="selectScore('FH')">${scorecard.FH}</button></td></tr>
-          <tr><td>Sm Straight</td><td><button class="score-btn" onclick="selectScore('SmS')">${scorecard.SmS}</button></td></tr>
-          <tr><td>Lg Straight</td><td><button class="score-btn" onclick="selectScore('LgS')">${scorecard.LgS}</button></td></tr>
-          <tr><td>YAHTZEE</td><td><button class="score-btn" onclick="selectScore('Yahtzee')">${scorecard.Yahtzee}</button></td></tr>
-          <tr><td>Chance</td><td><button class="score-btn" onclick="selectScore('Chance')">${scorecard.Chance}</button></td></tr>
-        </table>
-      `;
+      if(scorecard_faux==null)
+      {
+        existingCard.innerHTML = `
+          <h3>Scorecard for ${name}</h3>
+          <table>
+            <tr><th>Category</th><th>Score</th></tr>
+            <tr><td>Aces</td><td><button class="score-btn" id="${playerId}-Ones" onclick="selectScore('Ones', id)">${scorecard_real.Ones}</button></td></tr>
+            <tr><td>Twos</td><td><button class="score-btn" id="${playerId}-Twos" onclick="selectScore('Twos', id)">${scorecard_real.Twos}</button></td></tr>
+            <tr><td>Threes</td><td><button class="score-btn" id="${playerId}-Threes" onclick="selectScore('Threes', id)">${scorecard_real.Threes}</button></td></tr>
+            <tr><td>Fours</td><td><button class="score-btn" id="${playerId}-Fours" onclick="selectScore('Fours', id)">${scorecard_real.Fours}</button></td></tr>
+            <tr><td>Fives</td><td><button class="score-btn" id="${playerId}-Fives" onclick="selectScore('Fives', id)">${scorecard_real.Fives}</button></td></tr>
+            <tr><td>Sixes</td><td><button class="score-btn" id="${playerId}-Sixes" onclick="selectScore('Sixes', id)">${scorecard_real.Sixes}</button></td></tr>
+            <tr><td>3 of a Kind</td><td><button class="score-btn" id="${playerId}-ToK" onclick="selectScore('ToK', id)">${scorecard_real.ToK}</button></td></tr>
+            <tr><td>4 of a Kind</td><td><button class="score-btn" id="${playerId}-FoK" onclick="selectScore('FoK', id)">${scorecard_real.FoK}</button></td></tr>
+            <tr><td>Full House</td><td><button class="score-btn" id="${playerId}-FH" onclick="selectScore('FH', id)">${scorecard_real.FH}</button></td></tr>
+            <tr><td>Sm Straight</td><td><button class="score-btn" id="${playerId}-SmS" onclick="selectScore('SmS', id)">${scorecard_real.SmS}</button></td></tr>
+            <tr><td>Lg Straight</td><td><button class="score-btn" id="${playerId}-LgS" onclick="selectScore('LgS', id)">${scorecard_real.LgS}</button></td></tr>
+            <tr><td>YAHTZEE</td><td><button class="score-btn" id="${playerId}-Yahtzee" onclick="selectScore('Yahtzee', id)">${scorecard_real.Yahtzee}</button></td></tr>
+            <tr><td>Chance</td><td><button class="score-btn" id="${playerId}-Chance" onclick="selectScore('Chance', id)">${scorecard_real.Chance}</button></td></tr>
+          </table>
+        `;
+      }else{
+        existingCard.innerHTML = `
+          <h3>Scorecard for ${name}</h3>
+          <table>
+            <tr><th>Category</th><th>Score</th></tr>
+            <tr><td>Aces</td><td><button class="score-btn" id="${playerId}-Ones" onclick="selectScore('Ones', id)">${scorecard_faux.Ones}</button></td></tr>
+            <tr><td>Twos</td><td><button class="score-btn" id="${playerId}-Twos" onclick="selectScore('Twos', id)">${scorecard_faux.Twos}</button></td></tr>
+            <tr><td>Threes</td><td><button class="score-btn" id="${playerId}-Threes" onclick="selectScore('Threes', id)">${scorecard_faux.Threes}</button></td></tr>
+            <tr><td>Fours</td><td><button class="score-btn" id="${playerId}-Fours" onclick="selectScore('Fours', id)">${scorecard_faux.Fours}</button></td></tr>
+            <tr><td>Fives</td><td><button class="score-btn" id="${playerId}-Fives" onclick="selectScore('Fives', id)">${scorecard_faux.Fives}</button></td></tr>
+            <tr><td>Sixes</td><td><button class="score-btn" id="${playerId}-Sixes" onclick="selectScore('Sixes', id)">${scorecard_faux.Sixes}</button></td></tr>
+            <tr><td>3 of a Kind</td><td><button class="score-btn" id="${playerId}-ToK" onclick="selectScore('ToK', id)">${scorecard_faux.ToK}</button></td></tr>
+            <tr><td>4 of a Kind</td><td><button class="score-btn" id="${playerId}-FoK" onclick="selectScore('FoK', id)">${scorecard_faux.FoK}</button></td></tr>
+            <tr><td>Full House</td><td><button class="score-btn" id="${playerId}-FH" onclick="selectScore('FH', id)">${scorecard_faux.FH}</button></td></tr>
+            <tr><td>Sm Straight</td><td><button class="score-btn" id="${playerId}-SmS" onclick="selectScore('SmS', id)">${scorecard_faux.SmS}</button></td></tr>
+            <tr><td>Lg Straight</td><td><button class="score-btn" id="${playerId}-LgS" onclick="selectScore('LgS', id)">${scorecard_faux.LgS}</button></td></tr>
+            <tr><td>YAHTZEE</td><td><button class="score-btn" id="${playerId}-Yahtzee" onclick="selectScore('Yahtzee', id)">${scorecard_faux.Yahtzee}</button></td></tr>
+            <tr><td>Chance</td><td><button class="score-btn" id="${playerId}-Chance" onclick="selectScore('Chance', id)">${scorecard_faux.Chance}</button></td></tr>
+          </table>
+        `;
 
+      }
+
+      //disables buttons for non current turn's players
       if (localStorage.getItem("player_id") !== playerId) {
-        const buttons = existingCard.querySelectorAll(".score-btn");
-        buttons.forEach(button => {
+        const thisPlayerCard = document.getElementById(`scorecard-${localStorage.getItem("player_id")}`);
+        const thisPlayerButtons = thisPlayerCard.querySelectorAll(".score-btn");
+        thisPlayerButtons.forEach(button => {
           button.disabled = true;
+        });
+        const playerWhoseTurnItIsButtons = existingCard.querySelectorAll(".score-btn");
+        playerWhoseTurnItIsButtons.forEach(button => {
+          button.disabled = true;
+        });
+      }else{
+        const thisPlayerCard = document.getElementById(`scorecard-${playerId}`);
+        const thisPlayerButtons = thisPlayerCard.querySelectorAll(".score-btn");
+        thisPlayerButtons.forEach(button => {
+          //only enable buttons that are still "__"
+          switch(button.id){
+            case playerId + "-Ones":
+              if(scorecard_real.Ones !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-Twos":
+              if(scorecard_real.Twos !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-Threes":
+              if(scorecard_real.Threes !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-Fours":
+              if(scorecard_real.Fours !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-Fives":
+              if(scorecard_real.Fives !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-Sixes":
+              if(scorecard_real.Sixes !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-ToK":
+              if(scorecard_real.ToK !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-FoK":
+              if(scorecard_real.FoK !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-FH":
+              if(scorecard_real.FH !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-SmS":
+              if(scorecard_real.SmS !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-LgS":
+              if(scorecard_real.LgS !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-Yahtzee":
+              if(scorecard_real.Yahtzee !== "__"){
+                button.disabled = true;
+              }
+              break;
+            case playerId + "-Chance":
+               if(scorecard_real.Chance !== "__"){
+                 button.disabled = true;
+               }
+              break;
+            default:
+              break;
+
+          }
         });
       }
 
@@ -233,6 +342,31 @@
 
     socket.on("no_rolls_left", () => {
       document.getElementById("rollDiceBtn").disabled = true;
+    });
+
+    socket.on("turn_ended", (data) => {
+      const div = document.getElementById("currentTurnInfo");
+      div.textContent = `Current Turn: ${data.name}`;
+
+      if (localStorage.getItem("player_id") === data.playerId) {
+        document.getElementById("rollDiceBtn").disabled = false;
+        const diceDiv = document.getElementById("diceValues");
+        const buttons = diceDiv.querySelectorAll(".diceButton");
+        buttons.forEach(button => {
+          button.disabled = false;
+          button.style.borderStyle = "none";
+        });
+      }else{
+        document.getElementById("rollDiceBtn").disabled = true;
+        const diceDiv = document.getElementById("diceValues");
+        const buttons = diceDiv.querySelectorAll(".diceButton");
+        buttons.forEach(button => {
+          button.disabled = true;
+          button.style.borderStyle = "none";
+        });
+      }
+      
+
     });
 
     socket.on("error", alert);

@@ -188,21 +188,6 @@ def start_playing(data):
         "nameForCurrentTurn": nameForCurrentTurn
     }, room=code)
 
-    
-@socketio.on("end_turn")
-def end_turn(data):
-    code = data["code"]
-    room = rooms.get(code)
-
-    room["current_turn_index"] = (room["current_turn_index"] + 1) % len(room["players"])
-    next_player = room["players"][room["current_turn_index"]]
-
-    room["current_turn"] = next_player["id"]
-
-    emit("turn_ended", {
-        "current_turn": room["current_turn"],
-        "nameForCurrentTurn": next_player["name"]
-    }, room=code)
 
 @socketio.on("roll_dice")
 def roll_dice(data):
@@ -211,13 +196,6 @@ def roll_dice(data):
     
     #if no rolls left, make them choose a score
     if room["rolls_left"] <=0:
-        
-        #reset rolls, dice, and held dice for next player
-        room["rolls_left"] = 3
-        room["dice_values"] = [-1, -1, -1, -1, -1]
-        room["held_dice"] = [False, False, False, False, False]
-        
-        #notify frontend that there are no rolls left
         emit("no_rolls_left", room=code)
         
         #return as to not allow more rolling
@@ -244,11 +222,8 @@ def roll_dice(data):
         if current_players_scorecard[key] != "__":
             scorecard_with_possible_scores[key] = current_players_scorecard[key]
     
-    print(scorecard_with_possible_scores)
-    print(room["current_turn"])
-    print(room["players"][room["current_turn_index"]]["name"])
     emit("dice_rolled", {"dice": dice}, room=code)
-    emit("update_scorecards", {"scorecard": scorecard_with_possible_scores, "playerId": room["current_turn"], "name": room["players"][room["current_turn_index"]]["name"]}, room=code)
+    emit("update_scorecards", {"scorecard_faux": scorecard_with_possible_scores, "scorecard_real": current_players_scorecard, "playerId": room["current_turn"], "name": room["players"][room["current_turn_index"]]["name"]}, room=code)
     
 @socketio.on("hold_dice")
 def hold_dice(data):
@@ -264,7 +239,61 @@ def hold_dice(data):
         room["dice_values"][diceIndex] = int(diceValue)
     
     #emit("dice_held", {"diceIndex": diceIndex}, room=code)
+    
+@socketio.on("select_score")
+def select_score(data):
+    code = data["code"]
+    room = rooms.get(code)
+    scoreType = data["category"]
+    playerId = room["current_turn"]
+    room["scorecards"][playerId][scoreType] = room["possible_scores"][scoreType]
+    
+    #update scorecard
+    emit("update_scorecards", {"scorecard_faux": None, "scorecard_real": room["scorecards"][playerId], "playerId": room["current_turn"], "name": room["players"][room["current_turn_index"]]["name"]}, room=code)
+    
+    #reset data for next player
+    room["rolls_left"] = 3
+    room["dice_values"] = [-1, -1, -1, -1, -1]
+    room["held_dice"] = [False, False, False, False, False]
+    room["possible_scores"] = {
+            "Ones": "__",
+            "Twos": "__",
+            "Threes": "__",
+            "Fours": "__",
+            "Fives": "__",
+            "Sixes": "__",
+            "ToK": "__",
+            "FoK": "__",
+            "FH": "__",
+            "SmS": "__",
+            "LgS": "__",
+            "Yahtzee": "__",
+            "Chance": "__"}
+    room["current_turn_index"] = (room["current_turn_index"] + 1) % len(room["players"])
+    next_player = room["players"][room["current_turn_index"]]
 
+    room["current_turn"] = next_player["id"]
+    
+    roll_dice(data)
+    #go to next player's turn
+    emit("turn_ended", {"playerId": room["current_turn"], "name": next_player["name"]}, room=code)
+
+
+'''  
+@socketio.on("end_turn")
+def end_turn(data):
+    code = data["code"]
+    room = rooms.get(code)
+
+    room["current_turn_index"] = (room["current_turn_index"] + 1) % len(room["players"])
+    next_player = room["players"][room["current_turn_index"]]
+
+    room["current_turn"] = next_player["id"]
+
+    emit("turn_ended", {
+        "current_turn": room["current_turn"],
+        "nameForCurrentTurn": next_player["name"]
+    }, room=code)'''
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
