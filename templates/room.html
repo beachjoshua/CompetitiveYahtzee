@@ -149,6 +149,8 @@
             <tr><td>Fours</td><td>${card.Fours}</td></tr>
             <tr><td>Fives</td><td>${card.Fives}</td></tr>
             <tr><td>Sixes</td><td>${card.Sixes}</td></tr>
+            <tr><td>Upper Total</td><td>${card.UpperTotal}</td></tr>
+            <tr><td>Bonus (if Upper Total >= 63)</td><td>${card.Bonus}</td></tr
             <tr><td>3 of a Kind</td><td>${card.ToK}</td></tr>
             <tr><td>4 of a Kind</td><td>${card.FoK}</td></tr>
             <tr><td>Full House</td><td>${card.FH}</td></tr>
@@ -156,6 +158,7 @@
             <tr><td>Lg Straight</td><td>${card.LgS}</td></tr>
             <tr><td>YAHTZEE</td><td>${card.Yahtzee}</td></tr>
             <tr><td>Chance</td><td>${card.Chance}</td></tr>
+            <tr><td>Total Score</td><td>${card.Total}</td></tr>
           </table>
         `;
 
@@ -182,6 +185,8 @@
             <tr><td>Fours</td><td><button class="score-btn" id="${playerId}-Fours" onclick="selectScore('Fours', id)">${scorecard_real.Fours}</button></td></tr>
             <tr><td>Fives</td><td><button class="score-btn" id="${playerId}-Fives" onclick="selectScore('Fives', id)">${scorecard_real.Fives}</button></td></tr>
             <tr><td>Sixes</td><td><button class="score-btn" id="${playerId}-Sixes" onclick="selectScore('Sixes', id)">${scorecard_real.Sixes}</button></td></tr>
+            <tr><td>Upper Total</td><td>${scorecard_real.UpperTotal}</td></tr>
+            <tr><td>Bonus (if Upper Total >= 63)</td><td>${scorecard_real.Bonus}</td></tr>
             <tr><td>3 of a Kind</td><td><button class="score-btn" id="${playerId}-ToK" onclick="selectScore('ToK', id)">${scorecard_real.ToK}</button></td></tr>
             <tr><td>4 of a Kind</td><td><button class="score-btn" id="${playerId}-FoK" onclick="selectScore('FoK', id)">${scorecard_real.FoK}</button></td></tr>
             <tr><td>Full House</td><td><button class="score-btn" id="${playerId}-FH" onclick="selectScore('FH', id)">${scorecard_real.FH}</button></td></tr>
@@ -189,6 +194,7 @@
             <tr><td>Lg Straight</td><td><button class="score-btn" id="${playerId}-LgS" onclick="selectScore('LgS', id)">${scorecard_real.LgS}</button></td></tr>
             <tr><td>YAHTZEE</td><td><button class="score-btn" id="${playerId}-Yahtzee" onclick="selectScore('Yahtzee', id)">${scorecard_real.Yahtzee}</button></td></tr>
             <tr><td>Chance</td><td><button class="score-btn" id="${playerId}-Chance" onclick="selectScore('Chance', id)">${scorecard_real.Chance}</button></td></tr>
+            <tr><td>Total Score</td><td>${scorecard_real.Total}</td></tr>
           </table>
         `;
       }else{
@@ -202,6 +208,8 @@
             <tr><td>Fours</td><td><button class="score-btn" id="${playerId}-Fours" onclick="selectScore('Fours', id)">${scorecard_faux.Fours}</button></td></tr>
             <tr><td>Fives</td><td><button class="score-btn" id="${playerId}-Fives" onclick="selectScore('Fives', id)">${scorecard_faux.Fives}</button></td></tr>
             <tr><td>Sixes</td><td><button class="score-btn" id="${playerId}-Sixes" onclick="selectScore('Sixes', id)">${scorecard_faux.Sixes}</button></td></tr>
+            <tr><td>Upper Total</td><td>${scorecard_real.UpperTotal}</td></tr>
+            <tr><td>Bonus (if Upper Total >= 63)</td><td>${scorecard_real.Bonus}</td></tr>
             <tr><td>3 of a Kind</td><td><button class="score-btn" id="${playerId}-ToK" onclick="selectScore('ToK', id)">${scorecard_faux.ToK}</button></td></tr>
             <tr><td>4 of a Kind</td><td><button class="score-btn" id="${playerId}-FoK" onclick="selectScore('FoK', id)">${scorecard_faux.FoK}</button></td></tr>
             <tr><td>Full House</td><td><button class="score-btn" id="${playerId}-FH" onclick="selectScore('FH', id)">${scorecard_faux.FH}</button></td></tr>
@@ -209,6 +217,7 @@
             <tr><td>Lg Straight</td><td><button class="score-btn" id="${playerId}-LgS" onclick="selectScore('LgS', id)">${scorecard_faux.LgS}</button></td></tr>
             <tr><td>YAHTZEE</td><td><button class="score-btn" id="${playerId}-Yahtzee" onclick="selectScore('Yahtzee', id)">${scorecard_faux.Yahtzee}</button></td></tr>
             <tr><td>Chance</td><td><button class="score-btn" id="${playerId}-Chance" onclick="selectScore('Chance', id)">${scorecard_faux.Chance}</button></td></tr>
+            <tr><td>Total Score</td><td>${scorecard_real.Total}</td></tr>
           </table>
         `;
 
@@ -229,7 +238,7 @@
         const thisPlayerCard = document.getElementById(`scorecard-${playerId}`);
         const thisPlayerButtons = thisPlayerCard.querySelectorAll(".score-btn");
         thisPlayerButtons.forEach(button => {
-          //only enable buttons that are still "__"
+          //disable buttons for already selected categories
           switch(button.id){
             case playerId + "-Ones":
               if(scorecard_real.Ones !== "__"){
@@ -370,6 +379,11 @@
     });
 
     socket.on("error", alert);
+
+    socket.on("game_over", (data) => {
+      const div = document.getElementById("gameSection");
+      div.innerHTML = `<h2>Game Over! ${data.winner} won with a score of ${data.winner_score}!!!</h2>`;
+    });
   </script>
 </body>
 </html>

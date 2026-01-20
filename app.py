@@ -141,13 +141,16 @@ def create_scorecards(data):
             "Fours": "__",
             "Fives": "__",
             "Sixes": "__",
+            "UpperTotal": 0,
+            "Bonus": 0,
             "ToK": "__",
             "FoK": "__",
             "FH": "__",
             "SmS": "__",
             "LgS": "__",
             "Yahtzee": "__",
-            "Chance": "__"
+            "Chance": "__",
+            "Total": 0
         }
 
     room["scorecards"] = scorecards
@@ -165,6 +168,7 @@ def start_playing(data):
     room["rolls_left"] = 3
     room["held_dice"] = [False, False, False, False, False]
     room["dice_values"] = [-1, -1, -1, -1, -1]
+    room["total_rounds"] = 13*len(room["players"])
     
     #will be used to store possible scores for the current dice
     #and then will be compared to actual current player's scorecard, and then sent to frontend
@@ -244,9 +248,26 @@ def hold_dice(data):
 def select_score(data):
     code = data["code"]
     room = rooms.get(code)
+    room["total_rounds"] -= 1
     scoreType = data["category"]
     playerId = room["current_turn"]
     room["scorecards"][playerId][scoreType] = room["possible_scores"][scoreType]
+    
+    room["scorecards"][playerId]["UpperTotal"] = sum(
+        room["scorecards"][playerId][key] for key in ["Ones", "Twos", "Threes", "Fours", "Fives", "Sixes"]
+        if isinstance(room["scorecards"][playerId][key], int)
+    )
+    if room["scorecards"][playerId]["UpperTotal"] >= 63:
+        room["scorecards"][playerId]["Bonus"] = 35
+    else:
+        room["scorecards"][playerId]["Bonus"] = 0
+        
+    room["scorecards"][playerId]["Total"] = sum(
+        value for key, value in room["scorecards"][playerId].items()
+        if key not in ["Player_id", "Name", "Total", "UpperTotal"] and isinstance(value, int)
+    )
+    
+    
     
     #update scorecard
     emit("update_scorecards", {"scorecard_faux": None, "scorecard_real": room["scorecards"][playerId], "playerId": room["current_turn"], "name": room["players"][room["current_turn_index"]]["name"]}, room=code)
@@ -277,23 +298,17 @@ def select_score(data):
     roll_dice(data)
     #go to next player's turn
     emit("turn_ended", {"playerId": room["current_turn"], "name": next_player["name"]}, room=code)
+    
+    
+    if room["total_rounds"] <= 0:
+        winner = None
+        for player in room["players"]:
+            if not winner or room["scorecards"][player["id"]]["Total"] > room["scorecards"][winner["id"]]["Total"]:
+                winner = player
+        
+        emit("game_over", {"winner": winner["name"], "winner_score": room["scorecards"][winner["id"]]["Total"]}, room=code)
 
 
-'''  
-@socketio.on("end_turn")
-def end_turn(data):
-    code = data["code"]
-    room = rooms.get(code)
-
-    room["current_turn_index"] = (room["current_turn_index"] + 1) % len(room["players"])
-    next_player = room["players"][room["current_turn_index"]]
-
-    room["current_turn"] = next_player["id"]
-
-    emit("turn_ended", {
-        "current_turn": room["current_turn"],
-        "nameForCurrentTurn": next_player["name"]
-    }, room=code)'''
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
