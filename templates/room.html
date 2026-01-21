@@ -27,11 +27,22 @@
     <div id="dice">
       <h3>Dice</h3>
       <div id="diceValues">
-        <button id ="dice1" class="diceButton" onclick="holdDice(id, 0)" style="border-style:none">-</button>
-        <button id ="dice2" class="diceButton" onclick="holdDice(id, 1)" style="border-style:none">-</button>
-        <button id ="dice3" class="diceButton" onclick="holdDice(id, 2)" style="border-style:none">-</button>
-        <button id ="dice4" class="diceButton" onclick="holdDice(id, 3)" style="border-style:none">-</button>
-        <button id ="dice5" class="diceButton" onclick="holdDice(id, 4)" style="border-style:none">-</button>
+        <button id="dice1" class="diceButton" onclick="holdDice(id, 0)" style="border-style:none">
+          <img src="/static/images/blankDie.png" width="50">
+        </button>
+        <button id="dice2" class="diceButton" onclick="holdDice(id, 1)" style="border-style:none">
+          <img src="/static/images/blankDie.png" width="50">
+        </button>
+        <button id="dice3" class="diceButton" onclick="holdDice(id, 2)" style="border-style:none">
+          <img src="/static/images/blankDie.png" width="50">
+        </button>
+        <button id="dice4" class="diceButton" onclick="holdDice(id, 3)" style="border-style:none">
+          <img src="/static/images/blankDie.png" width="50">
+        </button>
+        <button id="dice5" class="diceButton" onclick="holdDice(id, 4)" style="border-style:none">
+          <img src="/static/images/blankDie.png" width="50">
+        </button>
+
       </div>
       <button id="rollDiceBtn" onclick="rollDice()">Roll Dice</button>
     </div>
@@ -74,7 +85,7 @@
       var diceButton = document.getElementById(id);
       
       //cant hold empty dice
-      if(diceButton.textContent == "-"){
+      if(!diceButton.dataset.value){
         return;
       }
 
@@ -87,7 +98,12 @@
         diceButton.style.borderStyle = "none";
       }
 
-      socket.emit("hold_dice", { code, diceIndex, value: diceButton.textContent });
+      socket.emit("hold_dice", { 
+        code, 
+        diceIndex, 
+        value: diceButton.dataset.value 
+      });
+
     }
 
     function selectScore(category, id){
@@ -97,6 +113,19 @@
 
       socket.emit("select_score", { code, category });
     }
+
+    function getDieImage(value) {
+      switch (value) {
+        case 1: return "/static/images/aceDie.png";
+        case 2: return "/static/images/twoDie.png";
+        case 3: return "/static/images/threeDie.png";
+        case 4: return "/static/images/fourDie.png";
+        case 5: return "/static/images/fiveDie.png";
+        case 6: return "/static/images/sixDie.png";
+        default: return "/static/images/blankDie.png";
+      }
+    }
+
 
     //////socket event handlers//////
 
@@ -342,9 +371,13 @@
       diceIndex = 0;
 
       data.dice.forEach(value => {
-        diceButtons[diceIndex].textContent = value;
+        const btn = diceButtons[diceIndex];
+        const img = btn.querySelector("img");
+        img.src = getDieImage(value);
+        btn.dataset.value = value; // store number for logic
         diceIndex += 1;
       });
+
 
       
     })

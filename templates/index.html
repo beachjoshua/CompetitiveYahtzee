@@ -2,13 +2,21 @@
 <html>
 <head>
   <title>Lobby</title>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <button onclick="createRoom()">Create Room</button>
+  <h1 class="indexTitle">Yahtzee Online</h1>
 
-  <h3>Join Room</h3>
-  <input id="code" placeholder="Room Code">
-  <button onclick="joinRoom()">Join</button>
+  <h3 class="indexHeader">Join Room</h3>
+  <input id="code" class="roomCodeInput" placeholder="Room Code">
+  <button class="joinButton" onclick="joinRoom()">
+    JOIN
+  </button>
+
+  <div>
+    <h3 class="indexHeader">Or</h3>
+    <button onclick="createRoom()" class="joinButton">CREATE ROOM</button>
+  </div>
 
   <script>
     async function createRoom() {

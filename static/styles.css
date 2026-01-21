@@ -32,8 +32,51 @@
 }
 
 .diceButton {
-  width: 80px;
-  height: 80px;
-  font-size: 36px;
-  margin: 20px;
+  padding: 0;
+  width: 128px;
+  height: 128px;
+  border: none;
+  background: none;
 }
+
+.diceButton img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.roomCodeInput {
+  padding: 10px;
+  font-size: 32px;
+  height: 60px;
+  width: 200px;
+  margin-right: 10px;
+}
+
+.joinButton {
+  padding: 20px;
+  font-size: 32px;
+
+  background: none;
+}
+
+.joinButton img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.indexTitle {
+  font-family: 'Arial', sans-serif;
+  font-size: 36px;
+  color: #000000;
+}
+
+.indexHeader {
+  font-family: 'Arial', sans-serif;
+  font-size: 24px;
+  color: #000000;
+}
+
