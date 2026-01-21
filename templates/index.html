@@ -4,10 +4,15 @@
   <title>Lobby</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
-<body>
-  <h1 class="indexTitle">Yahtzee Online</h1>
+<body class="indexBody">
+  <h1 class="indexTitle">Yahtzee</h1>
+  
+  <div class="title-lines">
+    <div class="line line-yellow"></div>
+    <div class="line line-orange"></div>
+    <div class="line line-red-orange"></div>
+  </div>
 
-  <h3 class="indexHeader">Join Room</h3>
   <input id="code" class="roomCodeInput" placeholder="Room Code">
   <button class="joinButton" onclick="joinRoom()">
     JOIN

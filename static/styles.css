@@ -51,14 +51,18 @@
   font-size: 32px;
   height: 60px;
   width: 200px;
-  margin-right: 10px;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .joinButton {
   padding: 20px;
   font-size: 32px;
+  text-align: center;
+  color: #ffffff;
 
-  background: none;
+  background: #efc900;
+  border-color: #ef5641;
 }
 
 .joinButton img {
@@ -70,13 +74,56 @@
 
 .indexTitle {
   font-family: 'Arial', sans-serif;
-  font-size: 36px;
-  color: #000000;
+  font-style: italic;
+  font-size: 120px;
+  color: #ffffff;
+  text-align: center;
+  margin: 15px 0px 10px 0px;
+}
+
+.title-lines {
+  width: 100vw;
+  margin: 0px;
+  align-self: stretch;
+}
+
+.line {
+  height: 30px;
+  width: 100%;
+}
+
+.line-yellow {
+  background-color: #efc900;
+}
+
+.line-orange {
+  background-color: #eea130;
+}
+
+.line-red-orange {
+  background-color: #ef5641;
 }
 
 .indexHeader {
   font-family: 'Arial', sans-serif;
   font-size: 24px;
-  color: #000000;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.indexBody {
+  background-color: #cf2e37;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.roomBody {
+  background-color: #a52020;
 }
 
