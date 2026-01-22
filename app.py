@@ -222,9 +222,37 @@ def roll_dice(data):
     
     scorecard_with_possible_scores = room["possible_scores"]
     current_players_scorecard = room["scorecards"][room["current_turn"]]
+    
+    
+    
+    #handle yahtzee bonus logic
+    if(scorecard_with_possible_scores["Yahtzee"] == 50 and current_players_scorecard["Yahtzee"] == 50):
+        if(scorecard_with_possible_scores["Ones"] == 5 and current_players_scorecard["Ones"] == "__"):
+            scorecard_with_possible_scores["Ones"] = 105
+        elif(scorecard_with_possible_scores["Twos"] == 10 and current_players_scorecard["Twos"] == "__"):
+            scorecard_with_possible_scores["Twos"] = 110
+        elif(scorecard_with_possible_scores["Threes"] == 15 and current_players_scorecard["Threes"] == "__"):
+            scorecard_with_possible_scores["Threes"] = 115
+        elif(scorecard_with_possible_scores["Fours"] == 20 and current_players_scorecard["Fours"] == "__"):
+            scorecard_with_possible_scores["Fours"] = 120
+        elif(scorecard_with_possible_scores["Fives"] == 25 and current_players_scorecard["Fives"] == "__"):
+            scorecard_with_possible_scores["Fives"] = 125
+        elif(scorecard_with_possible_scores["Sixes"] == 30 and current_players_scorecard["Sixes"] == "__"):
+            scorecard_with_possible_scores["Sixes"] = 130
+        else:
+            scorecard_with_possible_scores["Chance"] += 100
+            scorecard_with_possible_scores["ToK"] += 100
+            scorecard_with_possible_scores["FoK"] += 100
+            scorecard_with_possible_scores["FH"] = 125
+            scorecard_with_possible_scores["SmS"] = 130
+            scorecard_with_possible_scores["LgS"] = 140
+            
+    
     for key in scorecard_with_possible_scores:
         if current_players_scorecard[key] != "__":
             scorecard_with_possible_scores[key] = current_players_scorecard[key]
+    
+            
     
     emit("dice_rolled", {"dice": dice}, room=code)
     emit("update_scorecards", {"scorecard_faux": scorecard_with_possible_scores, "scorecard_real": current_players_scorecard, "playerId": room["current_turn"], "name": room["players"][room["current_turn_index"]]["name"]}, room=code)
