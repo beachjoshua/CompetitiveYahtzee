@@ -9,7 +9,7 @@
 .scorecard {
   border: 2px solid #333;
   padding: 10px;
-  width: 220px;
+  width: 270px;
   background-color: #f9f9f9;
   border-radius: 6px;
 }
@@ -55,6 +55,14 @@
   text-transform: uppercase;
 }
 
+.nameInput {
+  padding: 10px;
+  font-size: 32px;
+  height: 60px;
+  width: 300px;
+  text-align: center;
+}
+
 .joinButton {
   padding: 20px;
   font-size: 32px;
@@ -78,12 +86,12 @@
   font-size: 120px;
   color: #ffffff;
   text-align: center;
-  margin: 15px 0px 10px 0px;
+  margin: 10px 0px 0px 0px;
 }
 
 .title-lines {
   width: 100vw;
-  margin: 0px;
+  margin: 0px 0px 30px 0px;
   align-self: stretch;
 }
 
@@ -106,10 +114,45 @@
 
 .indexHeader {
   font-family: 'Arial', sans-serif;
-  font-size: 24px;
+  font-size: 32px;
   color: #ffffff;
   text-align: center;
-  margin-bottom: 10px;
+  margin: 10px 0px 20px 0px;
+}
+
+.roomHeader {
+  font-family: 'Arial', sans-serif;
+  font-size: 64px;
+  color: #ffffff;
+  text-align: center;
+  margin: 10px 0px 20px 0px;
+}
+
+.playersHeader {
+  font-family: 'Arial', sans-serif;
+  font-size: 48px;
+  text-decoration: underline;
+  color: #ffffff;
+  text-align: center;
+  margin: 10px 0px 20px 0px;
+}
+
+.currentTurnHeader {
+  font-family: 'Arial', sans-serif;
+  font-size: 32px;
+  text-decoration: underline;
+  color: #ffffff;
+  text-align: center;
+  margin: 0px 0px 0px 0px;
+}
+
+.playersList {
+  list-style-type: none;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  font-size: 32px;
+  color: #ffffff;
+  text-align: center;
 }
 
 .indexBody {
@@ -120,10 +163,17 @@
   align-items: center;
   text-align: center;
   gap: 12px;
-  margin: 0;
+  margin: 0px;
 }
 
 .roomBody {
-  background-color: #a52020;
+  background-color: #cf2e37;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  margin: 0px;
 }
 

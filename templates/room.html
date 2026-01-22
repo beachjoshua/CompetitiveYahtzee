@@ -6,26 +6,32 @@
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body class="roomBody">
-  <h1>Room Code: {{ code }}</h1>
+  <h1 id="roomHeader" class="roomHeader">Room Code: {{ code }}</h1>
+
+  <div class="title-lines">
+    <div class="line line-yellow"></div>
+    <div class="line line-orange"></div>
+    <div class="line line-red-orange"></div>
+  </div>
 
   <div id="joinSection">
-    <input id="name" placeholder="Your Name">
-    <button id="join" onclick="join()">Join Room</button>
+    <input id="name" placeholder="Your Name" class="nameInput">
+    <button id="join" onclick="join()" class="joinButton">Join Room</button>
   </div>
 
   <div id="lobbySection" style="display:none;">
-    <h3>Players</h3>
-    <ul id="players"></ul>
-    <button id="startBtn" onclick="startGame()" style="display:none;">
+    <h3 class="playersHeader">Players</h3>
+    <ul class="playersList"id="players"></ul>
+    <button id="startBtn" onclick="startGame()" class="joinButton" style="display:none;">
       Start Game
     </button>
   </div>
 
   <div id="gameSection" style="display:none;">
-    <div id="currentTurnInfo"> </div>
+    <div class="currentTurnHeader" id="currentTurnInfo"> </div>
     <div id="scorecardsSection"> </div>
     <div id="dice">
-      <h3>Dice</h3>
+      <h3></h3>
       <div id="diceValues">
         <button id="dice1" class="diceButton" onclick="holdDice(id, 0)" style="border-style:none">
           <img src="/static/images/blankDie.png" width="50">
@@ -67,6 +73,7 @@
 
     function startGame() {
       socket.emit("start_game", { code });
+      document.getElementById("roomHeader").style.display = "none";
     }
 
     function createScoreCards(){
@@ -415,7 +422,11 @@
 
     socket.on("game_over", (data) => {
       const div = document.getElementById("gameSection");
-      div.innerHTML = `<h2>Game Over! ${data.winner} won with a score of ${data.winner_score}!!!</h2>`;
+      div.style.display = "none";
+
+      const header = document.getElementById("roomHeader");
+      header.innerHTML = `Game Over! "${data.winner}" won with a score of ${data.winner_score}!!!`;
+      header.style.display = "block";
     });
   </script>
 </body>
