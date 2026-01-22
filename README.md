@@ -14,8 +14,7 @@ A real-time multiplayer Yahtzee game built with Flask and Socket.IO. Players can
 - **Real-time Communication:** WebSockets (Socket.IO)
 
 ## How to Run
-1. Install dependencies:
-- pip install flask flask-socketio
+1. Install dependencies: pip install flask flask-socketio
 
 2. Run the server: python app.py
 
